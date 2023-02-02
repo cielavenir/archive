@@ -105,7 +105,8 @@ describe("archive_extract", {
   it("can handle password", {
     in_dir <- tempfile()
     out_dir <- tempfile()
-    on.exit(unlink(c(in_dir, out_dir), recursive = TRUE))
+    out_temp_dir <- tempfile()
+    on.exit(unlink(c(in_dir, out_dir, out_temp_dir), recursive = TRUE))
     dir.create(in_dir, recursive = TRUE)
     write.csv(iris, file.path(in_dir, "iris.csv"))
     write.csv(mtcars, file.path(in_dir, "mtcars.csv"))
@@ -113,7 +114,7 @@ describe("archive_extract", {
     ar <- tempfile(fileext = ".zip")
     archive_write_dir(ar, in_dir, options = "encryption=1", password = "foobar")
 
-    expect_error(archive_extract(ar, out_dir), "Passphrase required for this entry")
+    expect_error(archive_extract(ar, out_temp_dir), "Passphrase required for this entry")
     archive_extract(ar, out_dir, password = "foobar")
     expect_true(all(c("iris.csv") %in% list.files(out_dir, recursive = TRUE)))
     expect_equal(as.vector(md5sum(file.path(out_dir, "iris.csv"))), as.vector(md5sum(file.path(in_dir, "iris.csv"))))
